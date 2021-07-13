@@ -9,6 +9,8 @@ io = require('socket.io')(server, {
 
 const PORT = process.env.PORT || 3000
 
+const msgsData = []
+
 io.on('connection', socket => {
     console.log("New connection: " + socket.id)
     socket.on('brushMove', (data) => {
@@ -20,9 +22,25 @@ io.on('connection', socket => {
     socket.on('redo', (data) => {
         socket.broadcast.emit('brushMove', data)
     })
-    socket.on('clearCanvas', id => {
+    socket.on('clearCanvas', user => {
         console.log('clearing canvas ');
-        socket.broadcast.emit('clearCanvas', id )
+        socket.broadcast.emit('clearCanvas', Object.assign(user, {
+            time: Date.now(),
+            username: "Server",
+            text: `${user.username} cleared Canvas!`,
+        }))
+    })
+
+    socket.on('lockCanvas', username=>{
+        socket.broadcast.emit('lockCanvas', username)
+    })
+    socket.on('releaseCanvas',()=>{
+        socket.broadcast.emit('releaseCanvas')
+    })
+
+    socket.on('sendMsg', data => {
+        console.log(data)
+        socket.broadcast.emit('receiveMsg', data)
     })
 })
 
