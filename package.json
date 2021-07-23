@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodmon",
+    "dev": "nodemon",
     "start": "node"
   },
   "keywords": [],
