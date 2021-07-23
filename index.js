@@ -18,6 +18,9 @@ io.on('connection', socket => {
     console.log("New connection: " + socket.id)
     socket.emit('getPrevMsgsData', msgsData)
     socket.emit('getPrevCanvasData', canvasData)
+    socket.on('ping',(time)=>{
+        socket.emit('ping', time)
+    })
     socket.on('brushMove', (data) => {
         socket.broadcast.emit('brushMove', data)
     })
