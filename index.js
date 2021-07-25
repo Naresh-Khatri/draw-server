@@ -14,11 +14,30 @@ const msgsData = []
 const canvasData = []
 let cSteps = -1
 
+const usersMap = new Map()
+let usersCount = 0
+
 io.on('connection', socket => {
-    console.log("New connection: " + socket.id)
+    usersCount++
+    // usersMap.set(socket.id, { username: socket.id})
     socket.emit('getPrevMsgsData', msgsData)
     socket.emit('getPrevCanvasData', canvasData)
-    socket.on('ping',(time)=>{
+    usersMap.set(socket.id, { username: 'unknown' })
+    socket.emit('updateUserList', Object.fromEntries(usersMap))
+
+    //to check if same username exist
+    socket.on('getUsersList', () => {
+        socket.emit('receiveUserList', Object.fromEntries(usersMap))
+    })
+    socket.on('userJoin', user => {
+        console.log('joined ')
+        console.log(user)
+        console.log(usersMap)
+        usersMap.set(socket.id, { username: user.username })
+        socket.broadcast.emit('userJoin', user)
+        socket.broadcast.emit('updateUserList', Object.fromEntries(usersMap))
+    })
+    socket.on('ping', (time) => {
         socket.emit('ping', time)
     })
     socket.on('brushMove', (data) => {
@@ -36,7 +55,7 @@ io.on('connection', socket => {
         socket.broadcast.emit('clearCanvas', Object.assign(user, {
             time: Date.now(),
             username: "Server",
-            text: `${user.username} cleared Canvas!`,
+            text: [`${user.username} cleared Canvas!`],
         }))
     })
     socket.on('sendUndo', user => {
@@ -65,6 +84,16 @@ io.on('connection', socket => {
         appendMsgData(data)
         // console.log(data)
         socket.broadcast.emit('receiveMsg', data)
+    })
+    socket.on('disconnect', () => {
+
+        console.log('disconnected ')
+        socket.broadcast.emit('releaseCanvas')
+        socket.broadcast.emit('userLeft', usersMap.get(socket.id))
+        console.log(usersMap.delete(socket.id))
+        console.log(socket.id)
+        console.log(usersMap)
+        socket.broadcast.emit('updateUserList', Object.fromEntries(usersMap))
     })
 })
 
