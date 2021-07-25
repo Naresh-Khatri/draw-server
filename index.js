@@ -21,7 +21,7 @@ io.on('connection', socket => {
     usersCount++
     // usersMap.set(socket.id, { username: socket.id})
     socket.emit('getPrevMsgsData', msgsData)
-    socket.emit('getPrevCanvasData', canvasData)
+    // socket.emit('getPrevCanvasData', canvasData)
     usersMap.set(socket.id, { username: 'unknown' })
     socket.emit('updateUserList', Object.fromEntries(usersMap))
 
