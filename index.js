@@ -20,22 +20,22 @@ let usersCount = 0
 io.on('connection', socket => {
     usersCount++
     // usersMap.set(socket.id, { username: socket.id})
-    socket.emit('getPrevMsgsData', msgsData)
-    // socket.emit('getPrevCanvasData', canvasData)
+    socket.emit('receivePrevMsgsData', msgsData)
+    socket.emit('receivePrevCanvasData', {canvasData, cSteps})
     usersMap.set(socket.id, { username: 'unknown' })
     socket.emit('updateUserList', Object.fromEntries(usersMap))
 
     //to check if same username exist
     socket.on('getUsersList', () => {
-        socket.emit('receiveUserList', Object.fromEntries(usersMap))
+        socket.emit('receiveUsersList', Object.fromEntries(usersMap))
     })
     socket.on('userJoin', user => {
         console.log('joined ')
         console.log(user)
-        console.log(usersMap)
         usersMap.set(socket.id, { username: user.username })
+        console.log(usersMap)
         socket.broadcast.emit('userJoin', user)
-        socket.broadcast.emit('updateUserList', Object.fromEntries(usersMap))
+        socket.broadcast.emit('receiveUsersList', Object.fromEntries(usersMap))
     })
     socket.on('ping', (time) => {
         socket.emit('ping', time)
@@ -59,7 +59,8 @@ io.on('connection', socket => {
         }))
     })
     socket.on('sendUndo', user => {
-        cSteps--
+        if(cSteps>-1)
+            cSteps--
         socket.broadcast.emit('receiveUndo', user)
     })
     socket.on('sendRedo', user => {
@@ -71,11 +72,15 @@ io.on('connection', socket => {
         socket.broadcast.emit('lockCanvas', username)
     })
     socket.on('releaseCanvas', (canvasPic) => {
+        console.log(cSteps + ' 74')
+
         cSteps++
         canvasData.push(canvasPic)
         if (cSteps < canvasData.length - 1) {
+            console.log(cSteps+ ' 79')
             canvasData.length = cSteps
         }
+        console.log(canvasData.length)
         socket.broadcast.emit('releaseCanvas', canvasPic)
     })
 
@@ -93,7 +98,7 @@ io.on('connection', socket => {
         console.log(usersMap.delete(socket.id))
         console.log(socket.id)
         console.log(usersMap)
-        socket.broadcast.emit('updateUserList', Object.fromEntries(usersMap))
+        socket.broadcast.emit('receiveUsersList', Object.fromEntries(usersMap))
     })
 })
 
